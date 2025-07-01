@@ -1,11 +1,4 @@
-import json
-import sys
-import warnings
-
-import numpy as np
-
 __version__ = "0.0.1"
-warnings.filterwarnings("ignore")
 
 def calcul_invest_classic(var_multiple, max_invest):
     ratio_classic = 1
@@ -36,6 +29,8 @@ def abondement(var_classic):
 
 ## resulat classic
 def calcul_classic(var_classic, action_ref, action_final, target_year):
+    if var_classic == 0:
+        return {'result': 0, 'gain': 0, 'interet': 0, 'var': 0}
     res_abondement = abondement(var_classic)
     invest_classic = var_classic
     invest_classic += res_abondement * (1-0.097) # CSG / CRDS à 9.7%
@@ -50,6 +45,8 @@ def calcul_classic(var_classic, action_ref, action_final, target_year):
 
 # go multiple
 def calcul_multiple(var_multiple, action_ref, action_final, target_year):
+    if var_multiple == 0:
+        return {'result': 0, 'gain': 0, 'interet': 0, 'var': 0}
     gain_multiple = (var_multiple / action_ref) * action_final
     gain_multiple -= var_multiple
     gain_multiple *= 6
@@ -70,10 +67,6 @@ def calcul_total(var_classic, var_multiple, action_ref, action_final, target_yea
     interet_total *= 100
     return {'result': res_total, 'gain': gain_total, 'interet': interet_total, 'classic': res_classic, 'multiple': res_multiple}
 
-
-#res_classic, gain_classic, interet_classic = calcul_classic(var_classic, action_ref, action_final, target_year)
-#res_multiple, gain_multiple, interet_multiple = calcul_multiple(var_multiple, action_ref, action_final, target_year)
-#res_total, gain_total, interet_total = calcul_total(var_classic, var_multiple, action_ref, action_final, target_year)
 
 def ff(v):
     return v['gain']
@@ -125,14 +118,13 @@ if __name__ == '__main__':
     target_year = 5
     max_invest = remuneration * 0.25
 
-    vals_multiple = np.arange(0, min(calcul_invest_multiple(0, max_invest), invest))
+    vals_multiple = list(range(0, int(min(calcul_invest_multiple(0, max_invest), invest))))
     vals_classic = [min(calcul_invest_classic(i, max_invest), invest-i) for i in vals_multiple]
 
     res = []
     for i in range(len(vals_classic)):
         res.append(calcul_total(vals_classic[i], vals_multiple[i], action_ref, action_final, target_year))
 
-    #print(json.dumps(max(res, key=ff), indent=2))
     result = max(res, key=ff)
     print("~=< Suez Go Optimizer >=~")
     print("You should invest as follows:")
